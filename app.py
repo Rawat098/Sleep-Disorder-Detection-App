@@ -3,10 +3,14 @@ import streamlit.components.v1 as components
 import joblib
 import numpy as np
 import plotly.io as pio
-from sklearn.preprocessing import MinMaxScaler
 import os
 
+# Load model and preprocessors
 model = joblib.load('best_model_decision_tree.pkl')
+gender_encoder = joblib.load('Gender_label_encoder.pkl')
+occupation_encoder = joblib.load('Occupation_label_encoder.pkl')
+bmi_encoder = joblib.load('BMI Category_label_encoder.pkl')
+scaler = joblib.load('minmax_scaler_split.pkl')
 
 # Load all Plotly figures from the "templates" folder
 def load_plotly_figures(folder_path):
@@ -16,29 +20,6 @@ def load_plotly_figures(folder_path):
         with open(os.path.join(folder_path, html_file), "r", encoding="utf-8") as f:
             html_contents[html_file] = f.read()
     return html_contents
-
-# Mapping for categorical variables
-occupation_mapping = {
-    'Doctor': 1,
-    'Teacher': 7,
-    'Nurse': 4,
-    'Engineer': 2,
-    'Accountant': 0,
-    'Lawyer': 3,
-    'Salesperson': 6,
-    'Others': 5
-}
-
-bmi_mapping = {
-    'Normal': 0,
-    'Overweight': 2,
-    'Obese': 1
-}
-
-gender_mapping = {
-    'Male': 1,
-    'Female': 0
-}
 
 def set_bg_hack_url():
     '''
@@ -177,10 +158,10 @@ def main():
             diastolic = st.number_input("Diastolic", value=80, step=1)
             st.markdown("**Diastolic**: The diastolic blood pressure of the individual in mmHg.")
 
-        # Encode categorical variables manually
-        gender_num = gender_mapping[gender]
-        occupation_num = occupation_mapping[occupation]
-        bmi_category_num = bmi_mapping[bmi_category]
+        # Encode categorical variables using loaded LabelEncoders
+        gender_num = gender_encoder.transform([gender])[0]
+        occupation_num = occupation_encoder.transform([occupation])[0]
+        bmi_category_num = bmi_encoder.transform([bmi_category])[0]
 
         # List of features for scaling
         numerical_features = [
@@ -188,12 +169,15 @@ def main():
             stress_level, heart_rate, daily_steps, systolic, diastolic
         ]
 
-        # Scale numerical features
-        scaler = MinMaxScaler()
-        scaled_features = scaler.fit_transform(np.array(numerical_features).reshape(-1, 1)).flatten()
+        # Scale numerical features using loaded MinMaxScaler
+        # Ensure the input has the same number of features the scaler was fitted on
+        complete_features = np.zeros((1, 12))
+        complete_features[0, :9] = numerical_features  # Assuming the first 9 features are the numerical ones
+
+        scaled_features = scaler.transform(complete_features).flatten()
 
         # Features list
-        features = [
+        features = np.array([
             gender_num,
             scaled_features[0],  # age_scaled
             occupation_num,
@@ -206,11 +190,12 @@ def main():
             scaled_features[6],  # daily_steps_scaled
             scaled_features[7],  # systolic_scaled
             scaled_features[8]   # diastolic_scaled
-        ]
+        ])
+
 
         # Make prediction
         if st.button("🔮 Predict"):
-            prediction = predict_sleep_disorder(np.array(features))
+            prediction = predict_sleep_disorder(features)
             if prediction == 0:
                 st.success("Predicted Sleep Disorder: No Disorder")
                 st.markdown("""
