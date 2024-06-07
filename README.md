@@ -1,6 +1,8 @@
 # 🌜 Sleep Disorder Detection App
 
-![Sleep Disorder Detection](https://github.com/RobinMillford/Sleep-Disorder-Detection-App/blob/main/Prediction1.png)
+![Sleep Disorder Detection No disoder](https://github.com/RobinMillford/Sleep-Disorder-Detection-App/blob/main/s1.png)
+![Sleep Disorder Detection Insomia](https://github.com/RobinMillford/Sleep-Disorder-Detection-App/blob/main/s2.png)
+![Sleep Disorder Detection Sleep apnea](https://github.com/RobinMillford/Sleep-Disorder-Detection-App/blob/main/s3.png)
 ![Sleep Disorder Detection1](https://github.com/RobinMillford/Sleep-Disorder-Detection-App/blob/main/Analysis.png)
 
 ## Overview
